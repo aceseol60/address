@@ -24,7 +24,7 @@
     <script src="https://juso.go.kr/addrlink/attatch/addrlink.js"></script>
     <script>
         // 발급받은 API Key를 여기에 입력하세요.
-        const confmKey = "YOUR_API_KEY_HERE"; // <-- 여기에 발급받은 API 키를 넣으세요!
+        const confmKey = "U01TX0FVVEgyMDI1MDcwODIxMDQwODExNTkyNDY="; // <-- 여기에 발급받은 API 키를 넣으세요!
 
         document.getElementById('search_button').addEventListener('click', function() {
             searchAddress();
@@ -95,7 +95,7 @@
         }
 
         // JSONP 요청을 위한 헬퍼 함수 (필요시 사용, 일반적으로는 API에서 직접 지원)
-        // 우정사업본부 API는 JSONP를 지원하므로, <script src="https://juso.go.kr/addrlink/attatch/addrlink.js"></script>
+        // 우정사업본부 API는 JSONP를 지원하므로.
         // 에 포함된 함수를 활용하는 것이 일반적입니다.
         // 아래 fetchJsonp는 범용적인 JSONP 요청 예시이며, 실제로는 juso.go.kr에서 제공하는 콜백 함수를 사용하는 것이 좋습니다.
         function fetchJsonp(url, params, callback) {
