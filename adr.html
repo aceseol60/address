@@ -94,10 +94,6 @@
             });
         }
 
-        // JSONP 요청을 위한 헬퍼 함수 (필요시 사용, 일반적으로는 API에서 직접 지원)
-        // 우정사업본부 API는 JSONP를 지원하므로.
-        // 에 포함된 함수를 활용하는 것이 일반적입니다.
-        // 아래 fetchJsonp는 범용적인 JSONP 요청 예시이며, 실제로는 juso.go.kr에서 제공하는 콜백 함수를 사용하는 것이 좋습니다.
         function fetchJsonp(url, params, callback) {
             const queryString = Object.keys(params).map(key => key + '=' + encodeURIComponent(params[key])).join('&');
             const script = document.createElement('script');
