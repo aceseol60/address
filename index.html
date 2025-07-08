@@ -1,118 +1,66 @@
-<!DOCTYPE html>
+
+/*
+ 파일명 : Sample.jsp
+ 내  용 : 주소입력화면 (Sample.jsp ↔jusoPopup.jsp ↔ 도로명주소 팝업API )
+*/
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>도로명주소 검색</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #address_input { width: 80%; padding: 8px; margin-bottom: 10px; }
-        #search_button { padding: 8px 15px; cursor: pointer; }
-        #address_list { border: 1px solid #ccc; max-height: 300px; overflow-y: auto; margin-top: 10px; }
-        .address_item { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .address_item:hover { background-color: #f0f0f0; }
-    </style>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script language="javascript">
+// opener관련 오류가 발생하는 경우 아래 주석을 해지하고, 사용자의 도메인정보를 입력합니다. ("팝업API 호출 소스"도 동일하게 적용시켜야 합니다.)
+//document.domain = "abc.go.kr";
+
+function goPopup(){
+	// 호출된 페이지(jusopopup.jsp)에서 실제 주소검색URL(https://business.juso.go.kr/addrlink/addrLinkUrl.do)를 호출하게 됩니다.
+    var pop = window.open("jusoPopup.jsp","pop","width=570,height=420, scrollbars=yes, resizable=yes"); 
+    
+	// 모바일 웹인 경우, 호출된 페이지(jusopopup.jsp)에서 실제 주소검색URL(https://business.juso.go.kr/addrlink/addrMobileLinkUrl.do)를 호출하게 됩니다.
+    //var pop = window.open("jusoPopup.jsp","pop","scrollbars=yes, resizable=yes"); 
+}
+/** API 서비스 제공항목 확대 (2017.02) **/
+function jusoCallBack(roadFullAddr,roadAddrPart1,addrDetail,roadAddrPart2,engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn
+						, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo){
+	// 팝업페이지에서 주소입력한 정보를 받아서, 현 페이지에 정보를 등록합니다.
+	document.form.roadAddrPart1.value = roadAddrPart1;
+	document.form.roadAddrPart2.value = roadAddrPart2;
+	document.form.addrDetail.value = addrDetail;
+	document.form.zipNo.value = zipNo;
+}
+</script>
+<title>주소 입력 샘플</title>
 </head>
 <body>
-
-    <h2>도로명주소 검색</h2>
-    <input type="text" id="address_input" placeholder="도로명 또는 건물명 입력">
-    <button id="search_button">검색</button>
-
-    <div id="address_list">
-        </div>
-
-    <script src="https://juso.go.kr/addrlink/attatch/addrlink.js"></script>
-    <script>
-        // 발급받은 API Key를 여기에 입력하세요.
-        const confmKey = "YOUR_API_KEY_HERE"; // <-- 여기에 발급받은 API 키를 넣으세요!
-
-        document.getElementById('search_button').addEventListener('click', function() {
-            searchAddress();
-        });
-
-        document.getElementById('address_input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchAddress();
-            }
-        });
-
-        function searchAddress() {
-            const keyword = document.getElementById('address_input').value;
-            if (!keyword) {
-                alert('검색어를 입력해주세요.');
-                return;
-            }
-
-            // 우정사업본부 API 호출 함수 (기존 샘플 코드를 활용)
-            // https://www.juso.go.kr/addrlink/devCenterEtc.do?mid=MM000000000007 에서 제공하는 '팝업API' 부분 참고
-            // 본 예시는 직접 API를 호출하는 형태로 수정되었습니다.
-            // 정확한 API 요청 URL 및 파라미터는 개발자센터 가이드를 참고하세요.
-            const apiUrl = 'https://www.juso.go.kr/addrlink/addrLinkApiJsonp.do';
-            const params = {
-                confmKey: confmKey,
-                currentPage: 1,
-                countPerPage: 10, // 한 페이지당 10개 결과
-                keyword: keyword,
-                resultType: 'json'
-            };
-
-            fetchJsonp(apiUrl, params, function(result) {
-                const addressListDiv = document.getElementById('address_list');
-                addressListDiv.innerHTML = ''; // 이전 결과 초기화
-
-                if (result.results.common.errorCode === '0') {
-                    if (result.results.juso && result.results.juso.length > 0) {
-                        result.results.juso.forEach(function(juso) {
-                            const addressItem = document.createElement('div');
-                            addressItem.className = 'address_item';
-                            addressItem.textContent = `[${juso.zipNo}] ${juso.roadAddr}`;
-                            addressItem.onclick = function() {
-                                // AppSheet 앱으로 데이터 전달
-                                // appsheet.setColumnValue(컬럼명, 값);
-                                // 이 함수는 AppSheet 웹 뷰에서만 작동합니다.
-
-                                if (window.appsheet) {
-                                    window.appsheet.setColumnValue("우편번호", juso.zipNo);
-                                    window.appsheet.setColumnValue("도로명주소", juso.roadAddr);
-                                    // 상세주소는 보통 사용자가 직접 입력하므로, 여기서는 기본 주소만 넘깁니다.
-                                    // 필요한 경우 juso.jibunAddr (지번주소) 등 다른 정보도 전달할 수 있습니다.
-                                } else {
-                                    alert(`AppSheet 앱이 아닙니다. 선택된 주소: [${juso.zipNo}] ${juso.roadAddr}`);
-                                }
-                                // 주소 선택 후 웹 뷰를 닫는 로직 (AppSheet에서 닫아야 함)
-                                // 이 페이지 자체를 닫으려면 window.close() 또는 history.back() 등을 사용할 수 있으나,
-                                // AppSheet 웹 뷰에서는 일반적으로 AppSheet 자체의 닫기 버튼을 사용합니다.
-                            };
-                            addressListDiv.appendChild(addressItem);
-                        });
-                    } else {
-                        addressListDiv.textContent = '검색 결과가 없습니다.';
-                    }
-                } else {
-                    addressListDiv.textContent = 'API 오류: ' + result.results.common.errorMessage;
-                }
-            });
-        }
-
-        // JSONP 요청을 위한 헬퍼 함수 (필요시 사용, 일반적으로는 API에서 직접 지원)
-        // 우정사업본부 API는 JSONP를 지원하므로, <script src="https://juso.go.kr/addrlink/attatch/addrlink.js"></script>
-        // 에 포함된 함수를 활용하는 것이 일반적입니다.
-        // 아래 fetchJsonp는 범용적인 JSONP 요청 예시이며, 실제로는 juso.go.kr에서 제공하는 콜백 함수를 사용하는 것이 좋습니다.
-        function fetchJsonp(url, params, callback) {
-            const queryString = Object.keys(params).map(key => key + '=' + encodeURIComponent(params[key])).join('&');
-            const script = document.createElement('script');
-            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-            
-            window[callbackName] = function(data) {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                callback(data);
-            };
-
-            script.src = url + '?' + queryString + '&callback=' + callbackName;
-            document.body.appendChild(script);
-        }
-
-    </script>
+<form name="form" id="form" method="post">
+	<table >
+			<colgroup>
+				<col style="width:20%"><col>
+			</colgroup>
+			<tbody>
+				<tr>
+					<th>우편번호</th>
+					<td>
+					    <input type="hidden" id="confmKey" name="confmKey" value=""  >
+						<input type="text" id="zipNo" name="zipNo" readonly style="width:100px">
+						<input type="button"  value="주소검색" onclick="goPopup();">
+					</td>
+				</tr>
+				<tr>
+					<th>도로명주소</th>
+					<td><input type="text" id="roadAddrPart1" style="width:85%"></td>
+				</tr>
+				<tr>
+					<th>상세주소</th>
+					<td>
+						<input type="text" id="addrDetail" style="width:40%" value="">
+						<input type="text" id="roadAddrPart2"  style="width:40%" value="">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+</form>
 </body>
 </html>
+						
